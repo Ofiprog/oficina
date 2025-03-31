@@ -7,7 +7,7 @@ supabase: Client=create_client(url,key)
 
 st.title("🎈 My new app")
 st.write(
-    "Ladadadadadadbuilding! For hadasdadelp gggfdbb6543333and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
+    " Probando !!!."
 )
 data=supabase.table("Usuarios").select("*").execute()
 st.write(data)
