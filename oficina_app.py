@@ -24,7 +24,7 @@ if "datos_submenu_open" not in st.session_state:
 def get_clientes():
     """Obtiene todos los clientes de la tabla 'clientes'."""
     try:
-        data = supabase.table("clientes").select("*").execute()
+        data = supabase.table("Clientes").select("*").execute()
         return data.data
     except Exception as e:
         st.error(f"Error al obtener clientes: {e}")
@@ -33,7 +33,7 @@ def get_clientes():
 def insert_cliente(nombre):
     """Inserta un nuevo cliente en la tabla 'clientes'."""
     try:
-        supabase.table("clientes").insert({"nombre": nombre}).execute()
+        supabase.table("Clientes").insert({"nombre": nombre}).execute()
         st.success("Cliente agregado correctamente.")
     except Exception as e:
         st.error(f"Error al agregar cliente: {e}")
@@ -41,7 +41,7 @@ def insert_cliente(nombre):
 def update_cliente(id, nombre):
     """Actualiza un cliente existente en la tabla 'clientes'."""
     try:
-        supabase.table("clientes").update({"nombre": nombre}).eq("id", id).execute()
+        supabase.table("Clientes").update({"nombre": nombre}).eq("id", id).execute()
         st.success("Cliente actualizado correctamente.")
     except Exception as e:
         st.error(f"Error al actualizar cliente: {e}")
@@ -49,7 +49,7 @@ def update_cliente(id, nombre):
 def delete_cliente(id):
     """Elimina un cliente de la tabla 'clientes'."""
     try:
-        supabase.table("clientes").delete().eq("id", id).execute()
+        supabase.table("Clientes").delete().eq("id", id).execute()
         st.success("Cliente eliminado correctamente.")
     except Exception as e:
         st.error(f"Error al eliminar cliente: {e}")
@@ -71,7 +71,7 @@ def mostrar_clientes():
     """Muestra la lista de clientes en una tabla."""
     clientes = get_clientes()
     if clientes:
-        st.table(clientes)
+        st.table(Clientes)
     else:
         st.write("No hay clientes registrados.")
 
