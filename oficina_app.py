@@ -71,7 +71,7 @@ def mostrar_clientes():
     """Muestra la lista de clientes en una tabla."""
     clientes = get_clientes()
     if clientes:
-        st.table(Clientes)
+        st.table(clientes)
     else:
         st.write("No hay clientes registrados.")
 
