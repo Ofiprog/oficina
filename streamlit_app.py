@@ -22,15 +22,10 @@ def pagina_dash():
     st.title("🏠 DashBoard")
     st.write("¡Bienvenido a la página de inicio de tu negocio!")
 
-def pagina_usuarios():
-    st.title("👥 Gestión de Usuarios")
-    st.write("Aquí podrás gestionar los usuarios de tu aplicación.")
-    st.subheader("Datos de Usuarios (Ejemplo)")
-    try:
-        data = supabase.table("Usuarios").select("*").execute()
-        st.write(data.data)
-    except Exception as e:
-        st.error(f"Error al obtener datos: {e}")
+def pagina_datos():
+    st.title("👥 Gestión de Datos")
+    st.write("Aquí podrás gestionar los Datos de tu aplicación.")
+    
 
 def pagina_productos():
     st.title("📦 Gestión de Productos")
@@ -107,8 +102,8 @@ def main():
             st.title("Menú")
             if st.button("Dashboard"):
                 st.session_state.pagina_actual = "Dashboard"
-            if st.button("Usuarios"):
-                st.session_state.pagina_actual = "Usuarios"
+            if st.button("Datos"):
+                st.session_state.pagina_actual = "Datos"
             if st.button("Productos"):
                 st.session_state.pagina_actual = "Productos"
             if st.button("Configuración"):
@@ -119,8 +114,8 @@ def main():
         # --- Page Content ---
         if st.session_state.pagina_actual == "Dashboard":
             pagina_dash()
-        elif st.session_state.pagina_actual == "Usuarios":
-            pagina_usuarios()
+        elif st.session_state.pagina_actual == "Datos":
+            pagina_datos()
         elif st.session_state.pagina_actual == "Productos":
             pagina_productos()
         elif st.session_state.pagina_actual == "Configuración":
