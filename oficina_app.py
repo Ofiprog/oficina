@@ -33,17 +33,17 @@ def get_clientes():
 def insert_cliente(nombre):
     """Inserta un nuevo cliente en la tabla 'Clientes'."""
     try:
-        response = supabase.table("Clientes").insert({"Nombre": nombre}).execute() # Se cambio nombre por Nombre
+        response = supabase.table("Clientes").insert({"Nombre": nombre}).execute()
         st.success("Cliente agregado correctamente.")
-        print("Respuesta de Supabase:", response)  # Imprime la respuesta de Supabase
+        print("Respuesta de Supabase:", response)
     except Exception as e:
-        st.error(f"Error al agregar cliente: {e}")
-        print("Error:", e) # Imprime el error
+        st.error(f"Error al agregar cliente: Posible Duplicacion de Nombre: {e}")
+        #print("Error:", e)
 
 def update_cliente(id, nombre):
     """Actualiza un cliente existente en la tabla 'Clientes'."""
     try:
-        supabase.table("Clientes").update({"Nombre": nombre}).eq("id", id).execute() # Se cambio nombre por Nombre
+        supabase.table("Clientes").update({"Nombre": nombre}).eq("id", id).execute()
         st.success("Cliente actualizado correctamente.")
     except Exception as e:
         st.error(f"Error al actualizar cliente: {e}")
@@ -73,7 +73,18 @@ def mostrar_clientes():
     """Muestra la lista de clientes en una tabla."""
     clientes = get_clientes()
     if clientes:
-        st.table(clientes)
+        # Ordenar la lista de clientes por el campo "Nombre"
+        clientes_ordenados = sorted(clientes, key=lambda cliente: cliente["Nombre"])
+        # Reorganizar las columnas
+        clientes_reorganizados = []
+        for cliente in clientes_ordenados:
+            clientes_reorganizados.append({
+                "id": cliente["id"],
+                "Nombre": cliente["Nombre"],
+                "created_at": cliente["created_at"]
+            })
+        
+        st.table(clientes_reorganizados)
     else:
         st.write("No hay clientes registrados.")
 
@@ -84,25 +95,27 @@ def agregar_cliente():
 
     if st.button("Agregar"):
         insert_cliente(nombre)
-        #st.rerun() # Se elimino el rerun
+        nombre = ""
+        st.rerun()
+        
 
 def editar_cliente():
     """Formulario para editar un cliente existente."""
     st.subheader("Editar Cliente")
     clientes = get_clientes()
     if clientes:
-        # Verificar que cada cliente tenga la clave 'Nombre'
-        clientes_con_nombre = [cliente for cliente in clientes if 'Nombre' in cliente] # Se cambio nombre por Nombre
+        clientes_con_nombre = [cliente for cliente in clientes if 'Nombre' in cliente]
         if clientes_con_nombre:
-            cliente_seleccionado = st.selectbox("Selecciona un cliente", clientes_con_nombre, format_func=lambda x: f"{x['Nombre']}") # Se cambio nombre por Nombre
+            # Se agrega la key="editar_cliente_selectbox"
+            cliente_seleccionado = st.selectbox("Selecciona un cliente", clientes_con_nombre, format_func=lambda x: f"{x['Nombre']}", key="editar_cliente_selectbox")
             if cliente_seleccionado:
-                nombre = st.text_input("Nombre", value=cliente_seleccionado["Nombre"]) # Se cambio nombre por Nombre
+                nombre = st.text_input("Nombre", value=cliente_seleccionado["Nombre"])
 
                 if st.button("Actualizar"):
                     update_cliente(cliente_seleccionado["id"], nombre)
                     st.rerun()
         else:
-            st.write("No hay clientes con el campo 'Nombre' para editar.") # Se cambio nombre por Nombre
+            st.write("No hay clientes con el campo 'Nombre' para editar.")
     else:
         st.write("No hay clientes para editar.")
 
@@ -111,16 +124,16 @@ def eliminar_cliente():
     st.subheader("Eliminar Cliente")
     clientes = get_clientes()
     if clientes:
-        # Verificar que cada cliente tenga la clave 'Nombre'
-        clientes_con_nombre = [cliente for cliente in clientes if 'Nombre' in cliente] # Se cambio nombre por Nombre
+        clientes_con_nombre = [cliente for cliente in clientes if 'Nombre' in cliente]
         if clientes_con_nombre:
-            cliente_seleccionado = st.selectbox("Selecciona un cliente", clientes_con_nombre, format_func=lambda x: f"{x['Nombre']}") # Se cambio nombre por Nombre
+            # Se agrega la key="eliminar_cliente_selectbox"
+            cliente_seleccionado = st.selectbox("Selecciona un cliente", clientes_con_nombre, format_func=lambda x: f"{x['Nombre']}", key="eliminar_cliente_selectbox")
             if cliente_seleccionado:
                 if st.button("Eliminar"):
                     delete_cliente(cliente_seleccionado["id"])
                     st.rerun()
         else:
-            st.write("No hay clientes con el campo 'Nombre' para eliminar.") # Se cambio nombre por Nombre
+            st.write("No hay clientes con el campo 'Nombre' para eliminar.")
     else:
         st.write("No hay clientes para eliminar.")
 
