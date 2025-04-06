@@ -56,6 +56,44 @@ def delete_cliente(id):
     except Exception as e:
         st.error(f"Error al eliminar cliente: {e}")
 
+
+# --- Funciones para interactuar con la tabla "Cajas" ---
+
+def get_cajas():
+    """Obtiene todas las cajas de la tabla 'Cajas'."""
+    try:
+        data = supabase.table("Cajas").select("*").execute()
+        return data.data
+    except Exception as e:
+        st.error(f"Error al obtener cajas: {e}")
+        return []
+
+def insert_caja(nombre):
+    """Inserta una nueva caja en la tabla 'Cajas'."""
+    try:
+        supabase.table("Cajas").insert({"Nombre": nombre}).execute()
+        st.success("Caja agregada correctamente.")
+    except Exception as e:
+        st.error(f"Error al agregar caja: {e}")
+
+def update_caja(id, nombre):
+    """Actualiza una caja existente en la tabla 'Cajas'."""
+    try:
+        supabase.table("Cajas").update({"Nombre": nombre}).eq("id", id).execute()
+        st.success("Caja actualizada correctamente.")
+    except Exception as e:
+        st.error(f"Error al actualizar caja: {e}")
+
+def delete_caja(id):
+    """Elimina una caja de la tabla 'Cajas'."""
+    try:
+        supabase.table("Cajas").delete().eq("id", id).execute()
+        st.success("Caja eliminada correctamente.")
+    except Exception as e:
+        st.error(f"Error al eliminar caja: {e}")
+
+
+
 # --- Funciones para las Páginas ---
 def pagina_dash():
     st.title("🏠 DashBoard")
@@ -137,13 +175,49 @@ def eliminar_cliente():
     else:
         st.write("No hay clientes para eliminar.")
 
-def pagina_datos_ventas():
-    st.title("📈 Datos - Ventas")
-    st.write("Aquí podrás gestionar las ventas.")
+
+def pagina_datos_cajas():
+    st.title("📦 Datos - Cajas")
+    
+    # Mostrar todas las cajas
+    st.subheader("Lista de Cajas")
+    cajas = get_cajas()
+    if cajas:
+        st.dataframe(cajas)
+    else:
+        st.write("No hay cajas registradas.")
+
+    # Formulario para agregar una nueva caja
+    st.subheader("Agregar Caja")
+    nombre = st.text_input("Nombre de la Caja")
+    if st.button("Agregar Caja"):
+        insert_caja(nombre)
+        st.rerun()
+
+    # Formulario para editar una caja existente
+    st.subheader("Editar Caja")
+    if cajas:
+        caja_seleccionada = st.selectbox("Selecciona una caja para editar", cajas, format_func=lambda x: f"{x['Nombre']}")
+        if caja_seleccionada:
+            nuevo_nombre = st.text_input("Nuevo Nombre", value=caja_seleccionada["Nombre"])
+            if st.button("Actualizar Caja"):
+                update_caja(caja_seleccionada["id"], nuevo_nombre)
+                st.rerun()
+
+    # Formulario para eliminar una caja existente
+    st.subheader("Eliminar Caja")
+    if cajas:
+        caja_seleccionada = st.selectbox("Selecciona una caja para eliminar", cajas, format_func=lambda x: f"{x['Nombre']}", key="eliminar_caja_selectbox")
+        if st.button("Eliminar Caja"):
+            delete_caja(caja_seleccionada["id"])
+            st.rerun()
+
 
 def pagina_datos_reportes():
     st.title("📊 Datos - Reportes")
     st.write("Aquí podrás ver los reportes.")
+
+
 
 def pagina_datos():
     st.title("👥 Gestión de Datos")
@@ -238,8 +312,8 @@ def main():
             if st.session_state.datos_submenu_open:
                 if st.button("Clientes", key="clientes_button",  type="secondary",  help="Gestiona los clientes",):
                     st.session_state.pagina_actual = "Datos-Clientes"
-                if st.button("Ventas", key="ventas_button", type="secondary", help="Gestiona las ventas"):
-                    st.session_state.pagina_actual = "Datos-Ventas"
+                if st.button("Cajas", key="cajas_button", type="secondary", help="Gestiona las cajas"):
+                    st.session_state.pagina_actual = "Datos-cajas"
                 if st.button("Reportes", key="reportes_button", type="secondary", help="Gestiona los reportes"):
                     st.session_state.pagina_actual = "Datos-Reportes"
 
@@ -259,8 +333,8 @@ def main():
             pagina_datos()
         elif st.session_state.pagina_actual == "Datos-Clientes":
             pagina_datos_clientes()
-        elif st.session_state.pagina_actual == "Datos-Ventas":
-            pagina_datos_ventas()
+        elif st.session_state.pagina_actual == "Datos-cajas":
+            pagina_datos_cajas()
         elif st.session_state.pagina_actual == "Datos-Reportes":
             pagina_datos_reportes()
         elif st.session_state.pagina_actual == "Productos":
