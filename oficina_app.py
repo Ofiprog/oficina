@@ -1,5 +1,7 @@
 import streamlit as st
 from supabase import create_client, Client
+from modules.cajas import get_cajas, insert_caja, update_caja, delete_caja
+from modules.clientes import get_clientes, insert_cliente, update_cliente, delete_cliente
 
 # --- Supabase Setup (Mantén tu configuración) ---
 url: str = "https://yundfqluztuthknvmoco.supabase.co"
@@ -18,79 +20,6 @@ if "pagina_actual" not in st.session_state:
     st.session_state.pagina_actual = "Inicio"
 if "datos_submenu_open" not in st.session_state:
     st.session_state.datos_submenu_open = False
-
-# --- Funciones para interactuar con Supabase ---
-
-def get_clientes():
-    """Obtiene todos los clientes de la tabla 'Clientes'."""
-    try:
-        data = supabase.table("Clientes").select("*").execute()
-        return data.data
-    except Exception as e:
-        st.error(f"Error al obtener clientes: {e}")
-        return []
-
-def insert_cliente(nombre):
-    """Inserta un nuevo cliente en la tabla 'Clientes'."""
-    try:
-        response = supabase.table("Clientes").insert({"Nombre": nombre}).execute()
-        st.success("Cliente agregado correctamente.")
-        print("Respuesta de Supabase:", response)
-    except Exception as e:
-        st.error(f"Error al agregar cliente: Posible Duplicacion de Nombre: {e}")
-        #print("Error:", e)
-
-def update_cliente(id, nombre):
-    """Actualiza un cliente existente en la tabla 'Clientes'."""
-    try:
-        supabase.table("Clientes").update({"Nombre": nombre}).eq("id", id).execute()
-        st.success("Cliente actualizado correctamente.")
-    except Exception as e:
-        st.error(f"Error al actualizar cliente: {e}")
-
-def delete_cliente(id):
-    """Elimina un cliente de la tabla 'Clientes'."""
-    try:
-        supabase.table("Clientes").delete().eq("id", id).execute()
-        st.success("Cliente eliminado correctamente.")
-    except Exception as e:
-        st.error(f"Error al eliminar cliente: {e}")
-
-
-# --- Funciones para interactuar con la tabla "Cajas" ---
-
-def get_cajas():
-    """Obtiene todas las cajas de la tabla 'Cajas'."""
-    try:
-        data = supabase.table("Cajas").select("*").execute()
-        return data.data
-    except Exception as e:
-        st.error(f"Error al obtener cajas: {e}")
-        return []
-
-def insert_caja(nombre):
-    """Inserta una nueva caja en la tabla 'Cajas'."""
-    try:
-        supabase.table("Cajas").insert({"Nombre": nombre}).execute()
-        st.success("Caja agregada correctamente.")
-    except Exception as e:
-        st.error(f"Error al agregar caja: {e}")
-
-def update_caja(id, nombre):
-    """Actualiza una caja existente en la tabla 'Cajas'."""
-    try:
-        supabase.table("Cajas").update({"Nombre": nombre}).eq("id", id).execute()
-        st.success("Caja actualizada correctamente.")
-    except Exception as e:
-        st.error(f"Error al actualizar caja: {e}")
-
-def delete_caja(id):
-    """Elimina una caja de la tabla 'Cajas'."""
-    try:
-        supabase.table("Cajas").delete().eq("id", id).execute()
-        st.success("Caja eliminada correctamente.")
-    except Exception as e:
-        st.error(f"Error al eliminar caja: {e}")
 
 
 
