@@ -29,12 +29,10 @@ def insert_dia(fecha, id_caja, sal_ini, tot_mov, sal_fin):
     except Exception as e:
         return f"Error al agregar el día: {e}"
 
-def update_dia(id, fecha, id_caja, sal_ini, tot_mov, sal_fin):
+def update_dia(id, sal_ini, tot_mov, sal_fin):
     """Actualiza un registro existente en la tabla 'Dias'."""
     try:
         supabase.table("Dias").update({
-            "Fecha": fecha,
-            "Id_caja": id_caja,
             "Sal_Ini": sal_ini,
             "Tot_mov": tot_mov,
             "Sal_Fin": sal_fin

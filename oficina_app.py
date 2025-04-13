@@ -107,42 +107,121 @@ def eliminar_cliente():
         st.write("No hay clientes para eliminar.")
 
 
-def pagina_datos_cajas():
-    st.title("📦 Datos - Cajas")
+def pagina_datos_dias():
+    st.title("📅 Datos - Días")
     
-    # Mostrar todas las cajas
-    st.subheader("Lista de Cajas")
+    # Obtener los días y las cajas
+    dias = get_dias()
     cajas = get_cajas()
-    if cajas:
-        st.dataframe(cajas)
-    else:
-        st.write("No hay cajas registradas.")
+    cajas_dict = {caja["id"]: caja["Nombre"] for caja in cajas} if cajas else {}
 
-    # Formulario para agregar una nueva caja
-    st.subheader("Agregar Caja")
-    nombre = st.text_input("Nombre de la Caja")
-    if st.button("Agregar Caja"):
-        insert_caja(nombre)
-        st.rerun()
+    # Verificar si hay días registrados
+    if dias is None or len(dias) == 0:
+        st.write("No hay días registrados.")
+        return
 
-    # Formulario para editar una caja existente
-    st.subheader("Editar Caja")
-    if cajas:
-        caja_seleccionada = st.selectbox("Selecciona una caja para editar", cajas, format_func=lambda x: f"{x['Nombre']}")
-        if caja_seleccionada:
-            nuevo_nombre = st.text_input("Nuevo Nombre", value=caja_seleccionada["Nombre"])
-            if st.button("Actualizar Caja"):
-                update_caja(caja_seleccionada["id"], nuevo_nombre)
+    # Reemplazar el ID de la caja con su nombre
+    for dia in dias:
+        dia["Id_caja"] = cajas_dict.get(dia["Id_caja"], "Caja no encontrada")
+    
+    # Mostrar los días en un dataframe
+    st.subheader("Lista de Días")
+    st.dataframe(dias)
+
+    # Formulario para agregar un nuevo día
+    st.subheader("Agregar Día")
+    col1, col2 = st.columns(2)
+    with col1:
+        fecha = st.date_input("Fecha")
+    with col2:    
+        id_caja_nombre = st.selectbox("Caja", list(cajas_dict.values())) if cajas_dict else None
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        sal_ini = st.number_input("Saldo Inicial", format="%.2f", step=None)
+    with col2:
+        tot_mov = st.number_input("Total de Movimientos", format="%.2f", step=None)
+    with col3:   
+        sal_fin = st.number_input("Saldo Final", format="%.2f", step=None)
+
+    if st.button("Agregar Día"):
+        if id_caja_nombre:
+            id_caja = {v: k for k, v in cajas_dict.items()}[id_caja_nombre]
+            fecha_str = fecha.isoformat()  # Convertir fecha a cadena en formato YYYY-MM-DD
+            
+            # Validar que no exista un registro duplicado
+            if validar_dia_unico(fecha_str, id_caja):
+                mensaje = insert_dia(fecha_str, id_caja, sal_ini, tot_mov, sal_fin)
+                st.success(mensaje)
                 st.rerun()
+            else:
+                st.error("Ya existe un registro con la misma fecha y la misma caja.")
+        else:
+            st.error("No hay cajas disponibles para seleccionar.")
 
-    # Formulario para eliminar una caja existente
-    st.subheader("Eliminar Caja")
-    if cajas:
-        caja_seleccionada = st.selectbox("Selecciona una caja para eliminar", cajas, format_func=lambda x: f"{x['Nombre']}", key="eliminar_caja_selectbox")
-        if st.button("Eliminar Caja"):
-            delete_caja(caja_seleccionada["id"])
-            st.rerun()
+    
+   # Formulario para seleccionar un día por fecha y caja
+st.subheader("Seleccionar Día para Editar")
+dias = get_dias()
+cajas = get_cajas()
+cajas_dict = {caja["id"]: caja["Nombre"] for caja in cajas} if cajas else {}
+if dias:
+    # Crear una lista de opciones combinadas
+    opciones = [
+        {"id": dia["id"], "texto": f"{dia['Fecha']} - {cajas_dict.get(dia['Id_caja'], 'Caja no encontrada')}"}
+        for dia in dias
+    ]
 
+    # Crear el selectbox con las opciones combinadas
+    dia_seleccionado = st.selectbox(
+        "Selecciona un día (Fecha - Caja)",
+        opciones,
+        format_func=lambda x: x["texto"]  # Mostrar solo el texto combinado
+    )
+
+    # Obtener el ID del día seleccionado
+    if dia_seleccionado:
+        dia_id = dia_seleccionado["id"]
+        st.write(f"ID del día seleccionado: {dia_id}")
+
+        # Aquí puedes realizar las operaciones con el ID seleccionado
+        # Por ejemplo, cargar los datos del día para edición
+        dia_para_editar = next((dia for dia in dias if dia["id"] == dia_id), None)
+        if dia_para_editar:
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                nuevo_sal_ini = st.number_input(
+                    "Nuevo Saldo Inicial",
+                    format="%.2f",
+                    value=dia_para_editar["Sal_Ini"],
+                    step=None
+                )
+            with col2:
+                nuevo_tot_mov = st.number_input(
+                    "Nuevo Total de Movimientos",
+                    format="%.2f",
+                    value=dia_para_editar["Tot_mov"],
+                    step=None
+                )
+            with col3:
+                nuevo_sal_fin = st.number_input(
+                    "Nuevo Saldo Final",
+                    format="%.2f",
+                    value=dia_para_editar["Sal_Fin"],
+                    step=None
+                )
+
+            # Botón para actualizar el día
+            if st.button("Actualizar Día"):
+                mensaje = update_dia(
+                    dia_id,
+                    
+                    nuevo_sal_ini,
+                    nuevo_tot_mov,
+                    nuevo_sal_fin
+                )
+                st.success(mensaje)
+                st.rerun()
 
 def pagina_datos_tip_mov():
     st.title("📦 Datos - Tipos de Movimiento")
@@ -182,73 +261,14 @@ def pagina_datos_tip_mov():
 
 
 
-def pagina_datos_dias():
-    st.title("📅 Datos - Días")
-    
-    # Mostrar todos los días
-    st.subheader("Lista de Días")
-    dias = get_dias()
-    if dias:
-        st.dataframe(dias)
-    else:
-        st.write("No hay días registrados.")
 
-    # Obtener las cajas para el selectbox
-    cajas = get_cajas()
-    cajas_dict = {caja["Nombre"]: caja["id"] for caja in cajas} if cajas else {}
-
-    # Formulario para agregar un nuevo día
-    st.subheader("Agregar Día")
-    #dividir en columnas
-    col1, col2 = st.columns(2)
-    with col1:
-        fecha = st.date_input("Fecha")
-    with col2:    
-        id_caja_nombre = st.selectbox("Caja", list(cajas_dict.keys())) if cajas_dict else None
-
-    Col1,col2,col3 = st.columns(3,vertical_alignment="bottom")
-
-    with col1:
-        sal_ini = st.number_input("Saldo Inicial", format="%.2f", step=None)
-    with col2:
-        tot_mov = st.number_input("Total de Movimientos", format="%.2f", step=None)
-    with col3:   
-        sal_fin = st.number_input("Saldo Final", format="%.2f", step=None)
-    if st.button("Agregar Día"):
-        if id_caja_nombre:
-            id_caja = cajas_dict[id_caja_nombre]
-            fecha_str = fecha.isoformat()  # Convertir fecha a cadena en formato YYYY-MM-DD
-            mensaje = insert_dia(fecha_str, id_caja, sal_ini, tot_mov, sal_fin)
-            st.success(mensaje)
-            st.rerun()
-        else:
-            st.error("No hay cajas disponibles para seleccionar.")
-
-    # Formulario para editar un día existente
-    st.subheader("Editar Día")
-    if dias:
-        dia_seleccionado = st.selectbox("Selecciona un día para editar", dias, format_func=lambda x: f"{x['Fecha']}")
-        if dia_seleccionado:
-            nueva_fecha = st.date_input("Nueva Fecha", value=dia_seleccionado["Fecha"])
-            nuevo_id_caja_nombre = st.selectbox("Nueva Caja", list(cajas_dict.keys()), index=list(cajas_dict.values()).index(dia_seleccionado["Id_caja"]) if dia_seleccionado["Id_caja"] in cajas_dict.values() else 0)
-            nuevo_sal_ini = st.number_input("Nuevo Saldo Inicial", format="%.2f", value=dia_seleccionado["Sal_Ini"], step=None)
-            nuevo_tot_mov = st.number_input("Nuevo Total de Movimientos", format="%.2f", value=dia_seleccionado["Tot_mov"], step=None)
-            nuevo_sal_fin = st.number_input("Nuevo Saldo Final", format="%.2f", value=dia_seleccionado["Sal_Fin"], step=None)
-            if st.button("Actualizar Día"):
-                nueva_fecha_str = nueva_fecha.isoformat()
-                nuevo_id_caja = cajas_dict[nuevo_id_caja_nombre]
-                mensaje = update_dia(dia_seleccionado["id"], nueva_fecha_str, nuevo_id_caja, nuevo_sal_ini, nuevo_tot_mov, nuevo_sal_fin)
-                st.success(mensaje)
-                st.rerun()
-
-    # Formulario para eliminar un día existente
-    st.subheader("Eliminar Día")
-    if dias:
-        dia_seleccionado = st.selectbox("Selecciona un día para eliminar", dias, format_func=lambda x: f"{x['Fecha']}", key="eliminar_dia_selectbox")
-        if st.button("Eliminar Día"):
-            mensaje = delete_dia(dia_seleccionado["id"])
-            st.success(mensaje)
-            st.rerun()
+def validar_dia_unico(fecha, id_caja):
+    """Valida que no exista un registro con la misma fecha y la misma caja."""
+    dias1 = get_dias()  # Obtiene todos los registros de la tabla 'Dias'
+    for dia in dias1:
+        if dia["Fecha"] == fecha and dia["Id_caja"] == id_caja:
+            return False  # Ya existe un registro con la misma fecha y caja
+    return True  # No existe un registro duplicado
 
 def pagina_datos():
     st.title("👥 Gestión de Datos")
@@ -319,7 +339,16 @@ st.markdown(
         background-color: #007acc !important;
         margin-left: 10px !important;
     }
+    
+    
     </style>
+    
+    <style>
+    .stNumberInput > div {
+        width: 250px; /* Ajusta el ancho del campo */
+    }
+    </style>
+    <style> button.step-up {display: none;} button.step-down {display: none;} </style>
     """,
     unsafe_allow_html=True,
 )
