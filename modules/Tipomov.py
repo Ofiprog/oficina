@@ -26,7 +26,7 @@ def insert_tipo_movimiento(nombre):
 def update_tipo_movimiento(id, nombre):
     """Actualiza un registro existente en la tabla 'Tipo_movimiento'."""
     try:
-        supabase.table("Tipo_movimiento").update({"Nombre": nombre}).eq("Id", id).execute()
+        supabase.table("Tipo_movimiento").update({"Nombre": nombre}).eq("id", id).execute()
         return "Tipo de movimiento actualizado correctamente."
     except Exception as e:
         return f"Error al actualizar el tipo de movimiento: {e}"
@@ -34,7 +34,7 @@ def update_tipo_movimiento(id, nombre):
 def delete_tipo_movimiento(id):
     """Elimina un registro de la tabla 'Tipo_movimiento'."""
     try:
-        supabase.table("Tipo_movimiento").delete().eq("Id", id).execute()
+        supabase.table("Tipo_movimiento").delete().eq("id", id).execute()
         return "Tipo de movimiento eliminado correctamente."
     except Exception as e:
         return f"Error al eliminar el tipo de movimiento: {e}"

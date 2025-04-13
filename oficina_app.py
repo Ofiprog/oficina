@@ -275,6 +275,8 @@ def main():
                     st.session_state.pagina_actual = "Datos-Clientes"
                 if st.button("Cajas", key="cajas_button", type="secondary", help="Gestiona las cajas"):
                     st.session_state.pagina_actual = "Datos-cajas"
+                if st.button("Tipos de Movimiento", key="tip_mov_button", type="secondary", help="Gestiona los tipos de movimiento"):
+                    st.session_state.pagina_actual = "Datos-Tipos de Movimiento"
                 if st.button("Reportes", key="reportes_button", type="secondary", help="Gestiona los reportes"):
                     st.session_state.pagina_actual = "Datos-Reportes"
 
