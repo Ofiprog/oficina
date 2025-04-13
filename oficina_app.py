@@ -207,12 +207,10 @@ def pagina_datos_dias():
     if st.button("Agregar Día"):
         if id_caja_nombre:
             id_caja = cajas_dict[id_caja_nombre]
-            mensaje = insert_dia(fecha, id_caja, sal_ini, tot_mov, sal_fin)
+            fecha_str = fecha.isoformat()  # Convertir fecha a cadena en formato YYYY-MM-DD
+            mensaje = insert_dia(fecha_str, id_caja, sal_ini, tot_mov, sal_fin)
             st.success(mensaje)
-            st.write(cajas_dict)
-            st.write(id_caja_nombre)
-            st.stop()
-            #st.rerun()
+            st.rerun()
         else:
             st.error("No hay cajas disponibles para seleccionar.")
 
