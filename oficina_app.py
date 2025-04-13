@@ -209,6 +209,8 @@ def pagina_datos_dias():
             id_caja = cajas_dict[id_caja_nombre]
             mensaje = insert_dia(fecha, id_caja, sal_ini, tot_mov, sal_fin)
             st.success(mensaje)
+            st.write(cajas_dict)
+            st.write(id_caja_nombre)
             st.rerun()
         else:
             st.error("No hay cajas disponibles para seleccionar.")
