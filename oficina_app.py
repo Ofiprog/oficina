@@ -3,8 +3,9 @@ from supabase import create_client, Client
 from modules.cajas import get_cajas, insert_caja, update_caja, delete_caja
 from modules.clientes import get_clientes, insert_cliente, update_cliente, delete_cliente
 from modules.Tipomov import get_tipo_movimientos, insert_tipo_movimiento, update_tipo_movimiento, delete_tipo_movimiento
+from modules.Dias import get_dias, insert_dia, update_dia, delete_dia
 
-# --- Supabase Setup (Mantén tu configuración) ---
+
 url: str = "https://yundfqluztuthknvmoco.supabase.co"
 key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1bmRmcWx1enR1dGhrbnZtb2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzODcxNjAsImV4cCI6MjA1ODk2MzE2MH0.P20V-2gUuVuwmbh59kKzuM4kMjZco0x23ynic8RZhpc"
 supabase: Client = create_client(url, key)
@@ -180,6 +181,55 @@ def pagina_datos_tip_mov():
             st.rerun()
 
 
+
+def pagina_datos_dias():
+    st.title("📅 Datos - Días")
+    
+    # Mostrar todos los días
+    st.subheader("Lista de Días")
+    dias = get_dias()
+    if dias:
+        st.dataframe(dias)
+    else:
+        st.write("No hay días registrados.")
+
+    # Formulario para agregar un nuevo día
+    st.subheader("Agregar Día")
+    fecha = st.date_input("Fecha")
+    id_caja = st.number_input("ID de la Caja", min_value=1, step=1)
+    sal_ini = st.number_input("Saldo Inicial", format="%.2f")
+    tot_mov = st.number_input("Total de Movimientos", format="%.2f")
+    sal_fin = st.number_input("Saldo Final", format="%.2f")
+    if st.button("Agregar Día"):
+        mensaje = insert_dia(fecha, id_caja, sal_ini, tot_mov, sal_fin)
+        st.success(mensaje)
+        st.rerun()
+
+    # Formulario para editar un día existente
+    st.subheader("Editar Día")
+    if dias:
+        dia_seleccionado = st.selectbox("Selecciona un día para editar", dias, format_func=lambda x: f"{x['Fecha']}")
+        if dia_seleccionado:
+            nueva_fecha = st.date_input("Nueva Fecha", value=dia_seleccionado["Fecha"])
+            nuevo_id_caja = st.number_input("Nuevo ID de la Caja", min_value=1, step=1, value=dia_seleccionado["Id_caja"])
+            nuevo_sal_ini = st.number_input("Nuevo Saldo Inicial", format="%.2f", value=dia_seleccionado["Sal_ini"])
+            nuevo_tot_mov = st.number_input("Nuevo Total de Movimientos", format="%.2f", value=dia_seleccionado["Tot_mov"])
+            nuevo_sal_fin = st.number_input("Nuevo Saldo Final", format="%.2f", value=dia_seleccionado["Sal_Fin"])
+            if st.button("Actualizar Día"):
+                mensaje = update_dia(dia_seleccionado["id"], nueva_fecha, nuevo_id_caja, nuevo_sal_ini, nuevo_tot_mov, nuevo_sal_fin)
+                st.success(mensaje)
+                st.rerun()
+
+    # Formulario para eliminar un día existente
+    st.subheader("Eliminar Día")
+    if dias:
+        dia_seleccionado = st.selectbox("Selecciona un día para eliminar", dias, format_func=lambda x: f"{x['Fecha']}", key="eliminar_dia_selectbox")
+        if st.button("Eliminar Día"):
+            mensaje = delete_dia(dia_seleccionado["id"])
+            st.success(mensaje)
+            st.rerun()
+
+
 def pagina_datos():
     st.title("👥 Gestión de Datos")
     st.write("Aquí podrás gestionar los Datos de tu aplicación.")
@@ -277,6 +327,8 @@ def main():
                     st.session_state.pagina_actual = "Datos-cajas"
                 if st.button("Tipos de Movimiento", key="tip_mov_button", type="secondary", help="Gestiona los tipos de movimiento"):
                     st.session_state.pagina_actual = "Datos-Tipos de Movimiento"
+                if st.button("Días", key="dias_button", type="secondary", help="Gestiona los días"):
+                    st.session_state.pagina_actual = "Datos-Días"    
                 if st.button("Reportes", key="reportes_button", type="secondary", help="Gestiona los reportes"):
                     st.session_state.pagina_actual = "Datos-Reportes"
 
@@ -300,6 +352,8 @@ def main():
             pagina_datos_cajas()
         elif st.session_state.pagina_actual == "Datos-Tipos de Movimiento":
             pagina_datos_tip_mov()
+        elif st.session_state.pagina_actual == "Datos-Días":
+            pagina_datos_dias()    
         elif st.session_state.pagina_actual == "Productos":
             pagina_productos()
         elif st.session_state.pagina_actual == "Configuración":
