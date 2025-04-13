@@ -21,7 +21,7 @@ def insert_dia(fecha, id_caja, sal_ini, tot_mov, sal_fin):
         supabase.table("Dias").insert({
             "Fecha": fecha,
             "Id_caja": id_caja,
-            "Sal_ini": sal_ini,
+            "Sal_Ini": sal_ini,
             "Tot_mov": tot_mov,
             "Sal_Fin": sal_fin
         }).execute()
