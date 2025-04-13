@@ -199,11 +199,20 @@ def pagina_datos_dias():
 
     # Formulario para agregar un nuevo día
     st.subheader("Agregar Día")
-    fecha = st.date_input("Fecha")
-    id_caja_nombre = st.selectbox("Caja", list(cajas_dict.keys())) if cajas_dict else None
-    sal_ini = st.number_input("Saldo Inicial", format="%.2f")
-    tot_mov = st.number_input("Total de Movimientos", format="%.2f")
-    sal_fin = st.number_input("Saldo Final", format="%.2f")
+    #dividir en columnas
+    col1, col2 = st.columns(2)
+    with col1:
+        fecha = st.date_input("Fecha")
+    with col2:    
+        id_caja_nombre = st.selectbox("Caja", list(cajas_dict.keys())) if cajas_dict else None
+
+    Col1,col2,col3 = st.columns(3,vertical_alignment="bottom")
+    with col1:
+        sal_ini = st.number_input("Saldo Inicial", format="%.2f", step=None)
+    with col2:
+        tot_mov = st.number_input("Total de Movimientos", format="%.2f", step=None)
+    with col3:   
+        sal_fin = st.number_input("Saldo Final", format="%.2f", step=None)
     if st.button("Agregar Día"):
         if id_caja_nombre:
             id_caja = cajas_dict[id_caja_nombre]
@@ -225,8 +234,9 @@ def pagina_datos_dias():
             nuevo_tot_mov = st.number_input("Nuevo Total de Movimientos", format="%.2f", value=dia_seleccionado["Tot_mov"])
             nuevo_sal_fin = st.number_input("Nuevo Saldo Final", format="%.2f", value=dia_seleccionado["Sal_Fin"])
             if st.button("Actualizar Día"):
+                nueva_fecha_str = nueva_fecha.isoformat()
                 nuevo_id_caja = cajas_dict[nuevo_id_caja_nombre]
-                mensaje = update_dia(dia_seleccionado["id"], nueva_fecha, nuevo_id_caja, nuevo_sal_ini, nuevo_tot_mov, nuevo_sal_fin)
+                mensaje = update_dia(dia_seleccionado["id"], nueva_fecha_str, nuevo_id_caja, nuevo_sal_ini, nuevo_tot_mov, nuevo_sal_fin)
                 st.success(mensaje)
                 st.rerun()
 
