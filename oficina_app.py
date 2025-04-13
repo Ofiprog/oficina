@@ -2,6 +2,7 @@ import streamlit as st
 from supabase import create_client, Client
 from modules.cajas import get_cajas, insert_caja, update_caja, delete_caja
 from modules.clientes import get_clientes, insert_cliente, update_cliente, delete_cliente
+from modules.Tipomov import get_tipo_movimientos, insert_tipo_movimiento, update_tipo_movimiento, delete_tipo_movimiento
 
 # --- Supabase Setup (Mantén tu configuración) ---
 url: str = "https://yundfqluztuthknvmoco.supabase.co"
@@ -142,10 +143,41 @@ def pagina_datos_cajas():
             st.rerun()
 
 
-def pagina_datos_reportes():
-    st.title("📊 Datos - Reportes")
-    st.write("Aquí podrás ver los reportes.")
+def pagina_datos_tip_mov():
+    st.title("📦 Datos - Tipos de Movimiento")
+    
+    # Mostrar todos los tipos de movimiento
+    st.subheader("Lista de Tipos de Movimiento")
+    tipos_movimiento = get_tipo_movimientos()
+    if tipos_movimiento:
+        st.dataframe(tipos_movimiento)
+    else:
+        st.write("No hay tipos de movimiento registrados.")
 
+    # Formulario para agregar un nuevo tipo de movimiento
+    st.subheader("Agregar Tipo de Movimiento")
+    nombre = st.text_input("Nombre del Tipo de Movimiento")
+    if st.button("Agregar Tipo"):
+        insert_tipo_movimiento(nombre)
+        st.rerun()
+
+    # Formulario para editar un tipo de movimiento existente
+    st.subheader("Editar Tipo de Movimiento")
+    if tipos_movimiento:
+        tipo_seleccionado = st.selectbox("Selecciona un tipo para editar", tipos_movimiento, format_func=lambda x: f"{x['Nombre']}")
+        if tipo_seleccionado:
+            nuevo_nombre = st.text_input("Nuevo Nombre", value=tipo_seleccionado["Nombre"])
+            if st.button("Actualizar Tipo"):
+                update_tipo_movimiento(tipo_seleccionado["id"], nuevo_nombre)
+                st.rerun()
+
+    # Formulario para eliminar un tipo de movimiento existente
+    st.subheader("Eliminar Tipo de Movimiento")
+    if tipos_movimiento:
+        tipo_seleccionado = st.selectbox("Selecciona un tipo para eliminar", tipos_movimiento, format_func=lambda x: f"{x['Nombre']}", key="eliminar_tipo_selectbox")
+        if st.button("Eliminar Tipo"):
+            delete_tipo_movimiento(tipo_seleccionado["id"])
+            st.rerun()
 
 
 def pagina_datos():
@@ -264,8 +296,8 @@ def main():
             pagina_datos_clientes()
         elif st.session_state.pagina_actual == "Datos-cajas":
             pagina_datos_cajas()
-        elif st.session_state.pagina_actual == "Datos-Reportes":
-            pagina_datos_reportes()
+        elif st.session_state.pagina_actual == "Datos-Tipos de Movimiento":
+            pagina_datos_tip_mov()
         elif st.session_state.pagina_actual == "Productos":
             pagina_productos()
         elif st.session_state.pagina_actual == "Configuración":
