@@ -35,7 +35,7 @@ def update_dia(id, fecha, id_caja, sal_ini, tot_mov, sal_fin):
         supabase.table("Dias").update({
             "Fecha": fecha,
             "Id_caja": id_caja,
-            "Sal_ini": sal_ini,
+            "Sal_Ini": sal_ini,
             "Tot_mov": tot_mov,
             "Sal_Fin": sal_fin
         }).eq("id", id).execute()
