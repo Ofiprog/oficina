@@ -193,17 +193,25 @@ def pagina_datos_dias():
     else:
         st.write("No hay días registrados.")
 
+    # Obtener las cajas para el selectbox
+    cajas = get_cajas()
+    cajas_dict = {caja["Nombre"]: caja["id"] for caja in cajas} if cajas else {}
+
     # Formulario para agregar un nuevo día
     st.subheader("Agregar Día")
     fecha = st.date_input("Fecha")
-    id_caja = st.number_input("ID de la Caja", min_value=1, step=1)
+    id_caja_nombre = st.selectbox("Caja", list(cajas_dict.keys())) if cajas_dict else None
     sal_ini = st.number_input("Saldo Inicial", format="%.2f")
     tot_mov = st.number_input("Total de Movimientos", format="%.2f")
     sal_fin = st.number_input("Saldo Final", format="%.2f")
     if st.button("Agregar Día"):
-        mensaje = insert_dia(fecha, id_caja, sal_ini, tot_mov, sal_fin)
-        st.success(mensaje)
-        st.rerun()
+        if id_caja_nombre:
+            id_caja = cajas_dict[id_caja_nombre]
+            mensaje = insert_dia(fecha, id_caja, sal_ini, tot_mov, sal_fin)
+            st.success(mensaje)
+            st.rerun()
+        else:
+            st.error("No hay cajas disponibles para seleccionar.")
 
     # Formulario para editar un día existente
     st.subheader("Editar Día")
@@ -211,11 +219,12 @@ def pagina_datos_dias():
         dia_seleccionado = st.selectbox("Selecciona un día para editar", dias, format_func=lambda x: f"{x['Fecha']}")
         if dia_seleccionado:
             nueva_fecha = st.date_input("Nueva Fecha", value=dia_seleccionado["Fecha"])
-            nuevo_id_caja = st.number_input("Nuevo ID de la Caja", min_value=1, step=1, value=dia_seleccionado["Id_caja"])
+            nuevo_id_caja_nombre = st.selectbox("Nueva Caja", list(cajas_dict.keys()), index=list(cajas_dict.values()).index(dia_seleccionado["Id_caja"]) if dia_seleccionado["Id_caja"] in cajas_dict.values() else 0)
             nuevo_sal_ini = st.number_input("Nuevo Saldo Inicial", format="%.2f", value=dia_seleccionado["Sal_ini"])
             nuevo_tot_mov = st.number_input("Nuevo Total de Movimientos", format="%.2f", value=dia_seleccionado["Tot_mov"])
             nuevo_sal_fin = st.number_input("Nuevo Saldo Final", format="%.2f", value=dia_seleccionado["Sal_Fin"])
             if st.button("Actualizar Día"):
+                nuevo_id_caja = cajas_dict[nuevo_id_caja_nombre]
                 mensaje = update_dia(dia_seleccionado["id"], nueva_fecha, nuevo_id_caja, nuevo_sal_ini, nuevo_tot_mov, nuevo_sal_fin)
                 st.success(mensaje)
                 st.rerun()
@@ -228,7 +237,6 @@ def pagina_datos_dias():
             mensaje = delete_dia(dia_seleccionado["id"])
             st.success(mensaje)
             st.rerun()
-
 
 def pagina_datos():
     st.title("👥 Gestión de Datos")
