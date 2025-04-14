@@ -161,65 +161,93 @@ def pagina_datos_dias():
 
     
    # Formulario para seleccionar un día por fecha y caja
-st.subheader("Seleccionar Día para Editar")
-dias = get_dias()
-cajas = get_cajas()
-cajas_dict = {caja["id"]: caja["Nombre"] for caja in cajas} if cajas else {}
-if dias:
-    # Crear una lista de opciones combinadas
-    opciones = [
-        {"id": dia["id"], "texto": f"{dia['Fecha']} - {cajas_dict.get(dia['Id_caja'], 'Caja no encontrada')}"}
-        for dia in dias
-    ]
+    st.subheader("Seleccionar Día para Editar")
+    dias = get_dias()
+    cajas = get_cajas()
+    cajas_dict = {caja["id"]: caja["Nombre"] for caja in cajas} if cajas else {}
+    if dias:
+        # Crear una lista de opciones combinadas
+        opciones = [
+            {"id": dia["id"], "texto": f"{dia['Fecha']} - {cajas_dict.get(dia['Id_caja'], 'Caja no encontrada')}"}
+            for dia in dias
+        ]
 
-    # Crear el selectbox con las opciones combinadas
-    dia_seleccionado = st.selectbox(
-        "Selecciona un día (Fecha - Caja)",
-        opciones,
-        format_func=lambda x: x["texto"]  # Mostrar solo el texto combinado
-    )
+        # Crear el selectbox con las opciones combinadas
+        dia_seleccionado = st.selectbox(
+            "Selecciona un día (Fecha - Caja)",
+            opciones,
+            format_func=lambda x: x["texto"]  # Mostrar solo el texto combinado
+        )
 
-    # Obtener el ID del día seleccionado
-    if dia_seleccionado:
-        dia_id = dia_seleccionado["id"]
-        st.write(f"ID del día seleccionado: {dia_id}")
+        # Obtener el ID del día seleccionado
+        if dia_seleccionado:
+            dia_id = dia_seleccionado["id"]
+            st.write(f"ID del día seleccionado: {dia_id}")
 
-        # Aquí puedes realizar las operaciones con el ID seleccionado
-        # Por ejemplo, cargar los datos del día para edición
-        dia_para_editar = next((dia for dia in dias if dia["id"] == dia_id), None)
-        if dia_para_editar:
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                nuevo_sal_ini = st.number_input(
-                    "Nuevo Saldo Inicial",
-                    format="%.2f",
-                    value=dia_para_editar["Sal_Ini"],
-                    step=None
-                )
-            with col2:
-                nuevo_tot_mov = st.number_input(
-                    "Nuevo Total de Movimientos",
-                    format="%.2f",
-                    value=dia_para_editar["Tot_mov"],
-                    step=None
-                )
-            with col3:
-                nuevo_sal_fin = st.number_input(
-                    "Nuevo Saldo Final",
-                    format="%.2f",
-                    value=dia_para_editar["Sal_Fin"],
-                    step=None
-                )
+            # Aquí puedes realizar las operaciones con el ID seleccionado
+            # Por ejemplo, cargar los datos del día para edición
+            dia_para_editar = next((dia for dia in dias if dia["id"] == dia_id), None)
+            if dia_para_editar:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    nuevo_sal_ini = st.number_input(
+                        "Nuevo Saldo Inicial",
+                        format="%.2f",
+                        value=dia_para_editar["Sal_Ini"],
+                        step=None
+                    )
+                with col2:
+                    nuevo_tot_mov = st.number_input(
+                        "Nuevo Total de Movimientos",
+                        format="%.2f",
+                        value=dia_para_editar["Tot_mov"],
+                        step=None
+                    )
+                with col3:
+                    nuevo_sal_fin = st.number_input(
+                        "Nuevo Saldo Final",
+                        format="%.2f",
+                        value=dia_para_editar["Sal_Fin"],
+                        step=None
+                    )
 
-            # Botón para actualizar el día
-            if st.button("Actualizar Día"):
-                mensaje = update_dia(
-                    dia_id,
-                    
-                    nuevo_sal_ini,
-                    nuevo_tot_mov,
-                    nuevo_sal_fin
-                )
+                # Botón para actualizar el día
+                if st.button("Actualizar Día"):
+                    mensaje = update_dia(
+                        dia_id,
+                        
+                        nuevo_sal_ini,
+                        nuevo_tot_mov,
+                        nuevo_sal_fin
+                    )
+                    st.success(mensaje)
+                    st.rerun()
+
+    # Formulario para eliminar un día existente
+    st.subheader("Eliminar Día")
+    if dias:
+        # Crear una lista de opciones combinadas
+        opciones = [
+            {"id": dia["id"], "texto": f"{dia['Fecha']} - {cajas_dict.get(dia['Id_caja'], 'Caja no encontrada')}"}
+            for dia in dias
+        ]
+
+        # Crear el selectbox con las opciones combinadas
+        dia_seleccionado = st.selectbox(
+            "Selecciona un día para eliminar (Fecha - Caja)",
+            opciones,
+            format_func=lambda x: x["texto"],  # Mostrar solo el texto combinado
+            key="eliminar_dia_selectbox"
+        )
+
+        # Obtener el ID del día seleccionado
+        if dia_seleccionado:
+            dia_id = dia_seleccionado["id"]
+            st.write(f"ID del día seleccionado para eliminar: {dia_id}")
+
+            # Botón para eliminar el día
+            if st.button("Eliminar Día"):
+                mensaje = delete_dia(dia_id)
                 st.success(mensaje)
                 st.rerun()
 
@@ -416,7 +444,7 @@ def main():
                 if st.button("Reportes", key="reportes_button", type="secondary", help="Gestiona los reportes"):
                     st.session_state.pagina_actual = "Datos-Reportes"
 
-            if st.button("Productos"):
+            if st.button("Operaciones"):
                 st.session_state.pagina_actual = "Operaciones"
                 st.session_state.datos_submenu_open = False
             if st.button("Configuración"):
