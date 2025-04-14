@@ -259,7 +259,42 @@ def pagina_datos_tip_mov():
             delete_tipo_movimiento(tipo_seleccionado["id"])
             st.rerun()
 
+# --- Página para gestionar las cajas ---
+def pagina_datos_cajas():
+    st.title("📦 Datos - Cajas")
+    
+    # Mostrar todas las cajas
+    st.subheader("Lista de Cajas")
+    cajas = get_cajas()
+    if cajas:
+        st.dataframe(cajas)
+    else:
+        st.write("No hay cajas registradas.")
 
+    # Formulario para agregar una nueva caja
+    st.subheader("Agregar Caja")
+    nombre = st.text_input("Nombre de la Caja")
+    if st.button("Agregar Caja"):
+        insert_caja(nombre)
+        st.rerun()
+
+    # Formulario para editar una caja existente
+    st.subheader("Editar Caja")
+    if cajas:
+        caja_seleccionada = st.selectbox("Selecciona una caja para editar", cajas, format_func=lambda x: f"{x['Nombre']}")
+        if caja_seleccionada:
+            nuevo_nombre = st.text_input("Nuevo Nombre", value=caja_seleccionada["Nombre"])
+            if st.button("Actualizar Caja"):
+                update_caja(caja_seleccionada["id"], nuevo_nombre)
+                st.rerun()
+
+    # Formulario para eliminar una caja existente
+    st.subheader("Eliminar Caja")
+    if cajas:
+        caja_seleccionada = st.selectbox("Selecciona una caja para eliminar", cajas, format_func=lambda x: f"{x['Nombre']}", key="eliminar_caja_selectbox")
+        if st.button("Eliminar Caja"):
+            delete_caja(caja_seleccionada["id"])
+            st.rerun()
 
 
 def validar_dia_unico(fecha, id_caja):
@@ -275,7 +310,7 @@ def pagina_datos():
     st.write("Aquí podrás gestionar los Datos de tu aplicación.")
     
 
-def pagina_productos():
+def pagina_operaciones():
     st.title("📦 Gestión de Productos")
     st.write("Aquí podrás gestionar los productos de tu negocio.")
 
@@ -382,7 +417,7 @@ def main():
                     st.session_state.pagina_actual = "Datos-Reportes"
 
             if st.button("Productos"):
-                st.session_state.pagina_actual = "Productos"
+                st.session_state.pagina_actual = "Operaciones"
                 st.session_state.datos_submenu_open = False
             if st.button("Configuración"):
                 st.session_state.pagina_actual = "Configuración"
@@ -403,8 +438,8 @@ def main():
             pagina_datos_tip_mov()
         elif st.session_state.pagina_actual == "Datos-Días":
             pagina_datos_dias()    
-        elif st.session_state.pagina_actual == "Productos":
-            pagina_productos()
+        elif st.session_state.pagina_actual == "Operaciones":
+            pagina_operaciones()
         elif st.session_state.pagina_actual == "Configuración":
             pagina_configuracion()
 
