@@ -4,7 +4,7 @@ from modules.cajas import get_cajas, insert_caja, update_caja, delete_caja
 from modules.clientes import get_clientes, insert_cliente, update_cliente, delete_cliente
 from modules.Tipomov import get_tipo_movimientos, insert_tipo_movimiento, update_tipo_movimiento, delete_tipo_movimiento
 from modules.Dias import get_dias, insert_dia, update_dia, delete_dia
-
+from modules.Movimientos import get_movimientos, insert_movimiento, update_movimiento, delete_movimiento
 
 url: str = "https://yundfqluztuthknvmoco.supabase.co"
 key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1bmRmcWx1enR1dGhrbnZtb2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzODcxNjAsImV4cCI6MjA1ODk2MzE2MH0.P20V-2gUuVuwmbh59kKzuM4kMjZco0x23ynic8RZhpc"
@@ -338,9 +338,126 @@ def pagina_datos():
     st.write("Aquí podrás gestionar los Datos de tu aplicación.")
     
 
-def pagina_operaciones():
-    st.title("📦 Gestión de Productos")
-    st.write("Aquí podrás gestionar los productos de tu negocio.")
+def pagina_datos_movimientos():
+    st.title("📊 Datos - Movimientos")
+    
+    # Obtener los movimientos, días, tipos de movimiento y clientes
+    movimientos = get_movimientos()
+    dias = get_dias()
+    tipos_movimiento = get_tipo_movimientos()
+    clientes = get_clientes()
+
+    # Crear diccionarios para facilitar la selección
+    dias_dict = {dia["id"]: f"{dia['Fecha']} - {dia['Id_caja']}" for dia in dias} if dias else {}
+    tipos_mov_dict = {tipo["id"]: tipo["Nombre"] for tipo in tipos_movimiento} if tipos_movimiento else {}
+    clientes_dict = {cliente["id"]: cliente["Nombre"] for cliente in clientes} if clientes else {}
+
+    # Mostrar todos los movimientos
+    st.subheader("Lista de Movimientos")
+    if movimientos:
+        for movimiento in movimientos:
+            movimiento["Id_dias"] = dias_dict.get(movimiento["Id_dias"], "Día no encontrado")
+            movimiento["Id_Tipomov"] = tipos_mov_dict.get(movimiento["Id_Tipomov"], "Tipo no encontrado")
+            movimiento["Id_cliente"] = clientes_dict.get(movimiento["Id_cliente"], "Cliente no encontrado")
+        st.dataframe(movimientos)
+    else:
+        st.write("No hay movimientos registrados.")
+
+    # Formulario para agregar un nuevo movimiento
+    st.subheader("Agregar Movimiento")
+    col1, col2 = st.columns(2)
+    with col1:
+        id_dias_nombre = st.selectbox("Día", list(dias_dict.values())) if dias_dict else None
+        id_tipomov_nombre = st.selectbox("Tipo de Movimiento", list(tipos_mov_dict.values())) if tipos_mov_dict else None
+    with col2:
+        id_cliente_nombre = st.selectbox("Cliente", list(clientes_dict.values())) if clientes_dict else None
+        monto = st.number_input("Monto", format="%.2f", step=None)
+    col1, col2 = st.columns(2)
+    with col1:
+        tipo_cam = st.number_input("Tipo de Cambio", format="%.2f", step=None)
+        tot_ope = st.number_input("Total Operaciones", format="%.2f", step=None)
+    with col2:
+        pesos = st.number_input("Pesos", format="%.2f", step=None)
+        transfer = st.number_input("Transferencia", format="%.2f", step=None)
+
+    if st.button("Agregar Movimiento"):
+        if id_dias_nombre and id_tipomov_nombre and id_cliente_nombre:
+            id_dias = {v: k for k, v in dias_dict.items()}[id_dias_nombre]
+            id_tipomov = {v: k for k, v in tipos_mov_dict.items()}[id_tipomov_nombre]
+            id_cliente = {v: k for k, v in clientes_dict.items()}[id_cliente_nombre]
+            mensaje = insert_movimiento(id_dias, id_tipomov, id_cliente, monto, tipo_cam, tot_ope, pesos, transfer)
+            st.success(mensaje)
+            st.rerun()
+        else:
+            st.error("Selecciona un día, un tipo de movimiento y un cliente.")
+
+    # Formulario para editar un movimiento existente
+    st.subheader("Editar Movimiento")
+    if movimientos:
+        movimiento_seleccionado = st.selectbox(
+            "Selecciona un movimiento para editar",
+            movimientos,
+            format_func=lambda x: f"{x['Id_dias']} - {x['Id_Tipomov']} - {x['Id_cliente']}"
+        )
+        if movimiento_seleccionado:
+            col1, col2 = st.columns(2)
+            with col1:
+                nuevo_id_dias_nombre = st.selectbox(
+                    "Nuevo Día",
+                    list(dias_dict.values()),
+                    index=list(dias_dict.values()).index(dias_dict.get(movimiento_seleccionado["Id_dias"], ""))
+                )
+                nuevo_id_tipomov_nombre = st.selectbox(
+                    "Nuevo Tipo de Movimiento",
+                    list(tipos_mov_dict.values()),
+                    index=list(tipos_mov_dict.values()).index(tipos_mov_dict.get(movimiento_seleccionado["Id_Tipomov"], ""))
+                )
+            with col2:
+                nuevo_id_cliente_nombre = st.selectbox(
+                    "Nuevo Cliente",
+                    list(clientes_dict.values()),
+                    index=list(clientes_dict.values()).index(clientes_dict.get(movimiento_seleccionado["Id_cliente"], ""))
+                )
+                nuevo_monto = st.number_input("Nuevo Monto", format="%.2f", value=movimiento_seleccionado["Monto"], step=None)
+            col1, col2 = st.columns(2)
+            with col1:
+                nuevo_tipo_cam = st.number_input("Nuevo Tipo de Cambio", format="%.2f", value=movimiento_seleccionado["Tipo_cam"], step=None)
+                nuevo_tot_ope = st.number_input("Nuevo Total Operaciones", format="%.2f", value=movimiento_seleccionado["Tot_ope"], step=None)
+            with col2:
+                nuevo_pesos = st.number_input("Nuevo Pesos", format="%.2f", value=movimiento_seleccionado["Pesos"], step=None)
+                nuevo_transfer = st.number_input("Nuevo Transferencia", format="%.2f", value=movimiento_seleccionado["Transfer"], step=None)
+
+            if st.button("Actualizar Movimiento"):
+                nuevo_id_dias = {v: k for k, v in dias_dict.items()}[nuevo_id_dias_nombre]
+                nuevo_id_tipomov = {v: k for k, v in tipos_mov_dict.items()}[nuevo_id_tipomov_nombre]
+                nuevo_id_cliente = {v: k for k, v in clientes_dict.items()}[nuevo_id_cliente_nombre]
+                mensaje = update_movimiento(
+                    movimiento_seleccionado["id"],
+                    nuevo_id_dias,
+                    nuevo_id_tipomov,
+                    nuevo_id_cliente,
+                    nuevo_monto,
+                    nuevo_tipo_cam,
+                    nuevo_tot_ope,
+                    nuevo_pesos,
+                    nuevo_transfer
+                )
+                st.success(mensaje)
+                st.rerun()
+
+    # Formulario para eliminar un movimiento existente
+    st.subheader("Eliminar Movimiento")
+    if movimientos:
+        movimiento_seleccionado = st.selectbox(
+            "Selecciona un movimiento para eliminar",
+            movimientos,
+            format_func=lambda x: f"{x['Id_dias']} - {x['Id_Tipomov']} - {x['Id_cliente']}",
+            key="eliminar_movimiento_selectbox"
+        )
+        if st.button("Eliminar Movimiento"):
+            mensaje = delete_movimiento(movimiento_seleccionado["id"])
+            st.success(mensaje)
+            st.rerun()
 
 def pagina_configuracion():
     st.title("⚙️ Configuración")
@@ -444,9 +561,8 @@ def main():
                 if st.button("Reportes", key="reportes_button", type="secondary", help="Gestiona los reportes"):
                     st.session_state.pagina_actual = "Datos-Reportes"
 
-            if st.button("Operaciones"):
-                st.session_state.pagina_actual = "Operaciones"
-                st.session_state.datos_submenu_open = False
+            if st.button("Movimientos", key="movimientos_button", type="secondary", help="Gestiona los movimientos"):
+                st.session_state.pagina_actual = "Datos-Movimientos"
             if st.button("Configuración"):
                 st.session_state.pagina_actual = "Configuración"
                 st.session_state.datos_submenu_open = False
@@ -467,7 +583,7 @@ def main():
         elif st.session_state.pagina_actual == "Datos-Días":
             pagina_datos_dias()    
         elif st.session_state.pagina_actual == "Operaciones":
-            pagina_operaciones()
+            pagina_datos_movimientos()
         elif st.session_state.pagina_actual == "Configuración":
             pagina_configuracion()
 
