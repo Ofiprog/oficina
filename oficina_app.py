@@ -371,10 +371,24 @@ def pagina_datos_movimientos():
         id_tipomov_nombre = st.selectbox("Tipo de Movimiento", list(tipos_mov_dict.values())) if tipos_mov_dict else None
     with col2:
         id_cliente_nombre = st.selectbox("Cliente", list(clientes_dict.values())) if clientes_dict else None
-        monto = st.number_input("Monto", format="%.2f", step=None)
+        # Campo de entrada para el monto
+        monto=st.number_input(
+            "Monto",
+            key="monto",  # Clave para almacenar el valor en st.session_state
+            format="%.2f",
+            on_change=actualizar_valor  # Función que se ejecuta al cambiar el valor
+        )
     col1, col2 = st.columns(2)
     with col1:
-        tipo_cam = st.number_input("Tipo de Cambio", format="%.2f", step=None)
+        tipo_cam=st.number_input(
+            "Tipo de Cambio",
+            key="tipo_cam",  # Clave para almacenar el valor en st.session_state
+            format="%.2f",
+            on_change=actualizar_valor  # Función que se ejecuta al cambiar el valor
+        )
+        
+        # Mostrar el resultado calculado
+        st.write(f"Resultado: {st.session_state.get('resultado', 0):.2f}")
         tot_ope = st.number_input("Total Operaciones", format="%.2f", step=None)
     with col2:
         pesos = st.number_input("Pesos", format="%.2f", step=None)
@@ -459,6 +473,20 @@ def pagina_datos_movimientos():
             st.success(mensaje)
             st.rerun()
 
+
+
+# Función que se ejecutará cuando cambie el valor del número
+def actualizar_valor():
+    st.session_state.resultado = st.session_state.monto * st.session_state.tipo_cam
+
+
+
+# Campo de entrada para el tipo de cambio
+
+
+
+
+
 def pagina_configuracion():
     st.title("⚙️ Configuración")
     st.write("Aquí podrás configurar las opciones de tu aplicación.")
@@ -528,7 +556,13 @@ st.markdown(
         width: 250px; /* Ajusta el ancho del campo */
     }
     </style>
-    <style> button.step-up {display: none;} button.step-down {display: none;} </style>
+    <style>
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    </style>
     """,
     unsafe_allow_html=True,
 )
@@ -560,9 +594,8 @@ def main():
                     st.session_state.pagina_actual = "Datos-Días"    
                 if st.button("Reportes", key="reportes_button", type="secondary", help="Gestiona los reportes"):
                     st.session_state.pagina_actual = "Datos-Reportes"
-
-            if st.button("Movimientos", key="movimientos_button", type="secondary", help="Gestiona los movimientos"):
-                st.session_state.pagina_actual = "Datos-Movimientos"
+                if st.button("Movimientos", key="movimientos_button", type="secondary", help="Gestiona los movimientos"):
+                    st.session_state.pagina_actual = "Datos-Movimientos"
             if st.button("Configuración"):
                 st.session_state.pagina_actual = "Configuración"
                 st.session_state.datos_submenu_open = False
@@ -582,7 +615,7 @@ def main():
             pagina_datos_tip_mov()
         elif st.session_state.pagina_actual == "Datos-Días":
             pagina_datos_dias()    
-        elif st.session_state.pagina_actual == "Operaciones":
+        elif st.session_state.pagina_actual == "Datos-Movimientos":
             pagina_datos_movimientos()
         elif st.session_state.pagina_actual == "Configuración":
             pagina_configuracion()

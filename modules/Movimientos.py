@@ -24,7 +24,7 @@ def insert_movimiento(id_dias, id_tipomov, id_cliente, monto, tipo_cam, tot_ope,
             "Id_cliente": id_cliente,
             "Monto": monto,
             "Tipo_cam": tipo_cam,
-            "Tot_ope": tot_ope,
+            "Tot_Ope": tot_ope,
             "Pesos": pesos,
             "Transfer": transfer
         }).execute()
@@ -41,7 +41,7 @@ def update_movimiento(id, id_dias, id_tipomov, id_cliente, monto, tipo_cam, tot_
             "Id_cliente": id_cliente,
             "Monto": monto,
             "Tipo_cam": tipo_cam,
-            "Tot_ope": tot_ope,
+            "Tot_Ope": tot_ope,
             "Pesos": pesos,
             "Transfer": transfer
         }).eq("id", id).execute()
