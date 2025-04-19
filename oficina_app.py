@@ -1,4 +1,5 @@
 import streamlit as st
+import locale
 from supabase import create_client, Client
 from modules.cajas import get_cajas, insert_caja, update_caja, delete_caja
 from modules.clientes import get_clientes, insert_cliente, update_cliente, delete_cliente
@@ -112,6 +113,7 @@ def pagina_datos_dias():
     
     # Obtener los días y las cajas
     dias = get_dias()
+    cajas = get_cajas()
     cajas = get_cajas()
     cajas_dict = {caja["id"]: caja["Nombre"] for caja in cajas} if cajas else {}
 
@@ -344,11 +346,13 @@ def pagina_datos_movimientos():
     # Obtener los movimientos, días, tipos de movimiento y clientes
     movimientos = get_movimientos()
     dias = get_dias()
+    cajas = get_cajas()
     tipos_movimiento = get_tipo_movimientos()
     clientes = get_clientes()
+    cajas_dict = {caja["id"]: caja["Nombre"] for caja in cajas} if cajas else {}
 
     # Crear diccionarios para facilitar la selección
-    dias_dict = {dia["id"]: f"{dia['Fecha']} - {dia['Id_caja']}" for dia in dias} if dias else {}
+    dias_dict = {dia["id"]: f"{dia['Fecha']} - {cajas_dict.get(dia['Id_caja'], 'Caja no encontrada')}" for dia in dias} if dias else {}
     tipos_mov_dict = {tipo["id"]: tipo["Nombre"] for tipo in tipos_movimiento} if tipos_movimiento else {}
     clientes_dict = {cliente["id"]: cliente["Nombre"] for cliente in clientes} if clientes else {}
 
@@ -388,6 +392,7 @@ def pagina_datos_movimientos():
         )
         
         # Mostrar el resultado calculado
+        #locale.format_string("$%.2f", monto, grouping=True)
         st.write(f"Resultado: {st.session_state.get('resultado', 0):.2f}")
         tot_ope = st.number_input("Total Operaciones", format="%.2f", step=None)
     with col2:
